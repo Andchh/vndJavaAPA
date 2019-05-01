@@ -7,25 +7,23 @@ import java.util.Random;
 public class InitialSolution {
 	
 	
-	public int getValue(Integer[] sol, int[][]matriz){
+	public int getValue(Integer[] sol, int[][]matriz, int size){
 		
 		int value = 0;
-		
-		for(int i = 0; i < sol.length; i++){
-			int atual = sol[i];
+		for(int i = 0; i < (size); i++){
 			int prox = 0;
-			if (atual != sol.length) {
+			int atual = sol[i];
+			atual--; //gambiarra pra entrar na matriz direito pois ela está iniciando em index 0
+			
+			if (i < (size-1)) {
 				prox = sol[i+1];
-			} else if(atual == sol.length){
+				prox--;
+			} else if(i == (size-1)){
 				prox = sol[0];
 			}
 			value += matriz[atual][prox];
-		
 		}
-		
-		System.out.println(value);
 		return value;
-		
 	}
 	
 	
@@ -33,16 +31,16 @@ public class InitialSolution {
 		
 		Integer [] solution = new Integer[size];
 		
-		for(int i = 0; i < matriz.length; i++){
+		for(int i = 0; i < size; i++){ //preenche o array com os numeros de 1-tamanho n da matriz  nxm 
 			solution[i] = i+1;
+			//System.out.printf("%3d", solution[i]);
+			//System.out.println();
 		}
 		List<Integer> l = Arrays.asList(solution);
 		Collections.shuffle(l);
-		//int[] aRandom = new int[size];
-		//System.out.println(l);
 		
 		solution = (Integer[]) l.toArray();
-		System.out.println(Arrays.toString(solution));
+		//System.out.println(Arrays.toString(solution));
 			
 		return solution;
 		
