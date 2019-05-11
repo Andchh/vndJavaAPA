@@ -13,9 +13,30 @@ public class VND {
 	public static void main(String[] args) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		
+		/*
+		 * String vert; //salvar quantidade de vertices //lendo o arquivo e criando a
+		 * matriz String path = "C:/Users/Anderson/Documents/workspace/VND/swiss42.txt";
+		 * 
+		 * File file = new File(path); Scanner s = null; s = new Scanner(file);
+		 * s.nextLine(); //pula uma linha
+		 * 
+		 * vert = s.nextLine(); //pega a linha que contem as dimensões
+		 * 
+		 * int vertq = Integer.parseInt(vert.replaceAll("[\\D]", "")); //pega apenas os
+		 * numeros da linha //vertq--; //pois a contagem começa de 0 s.nextLine();
+		 * //pula linha int[][] matriz = new int[vertq][vertq]; //cria matriz do tamanho
+		 * da quantidade dos vértices
+		 * 
+		 * 
+		 * 
+		 * //preenche a matriz ArrayList<Integer> numeros = new ArrayList<Integer>();
+		 * while(s.hasNextInt()){ numeros.add(s.nextInt()); } int total = 0; for (int i
+		 * = 0; i < vertq; i++) { //linhas for (int j = 0; j < vertq; j++) { //colunas
+		 * matriz[i][j] = numeros.get(total); total++; } } s.close();
+		 */
 		String vert; //salvar quantidade de vertices
 		//lendo o arquivo e criando a matriz
-		String path = "C:/Users/Anderson/Documents/workspace/VND/swiss42.txt";
+		String path = "C:/Users/Anderson/Documents/workspace/VND/tsp3.txt";
 				
 		File file = new File(path);
 		Scanner s = null;
@@ -26,23 +47,37 @@ public class VND {
 		
 		int vertq = Integer.parseInt(vert.replaceAll("[\\D]", "")); //pega apenas os numeros da linha
 		//vertq--; //pois a contagem começa de 0
+		System.out.println("vertq: " + vertq);
+		System.out.println(s.next()); //dysplay data section
 		s.nextLine(); //pula linha
-		int[][] matriz = new int[vertq][vertq]; //cria matriz do tamanho da quantidade dos vértices
+		//System.out.println(s.next() + " " + s.next() + " "+ s.next());
 		
 		
+		int[] index = new int[vertq];
+		double[] x = new double[vertq];
+		double[] y =  new double[vertq];
+		int i = 0;
 		
-		//preenche a matriz
-		ArrayList<Integer> numeros = new ArrayList<Integer>();
-		while(s.hasNextInt()){
-			numeros.add(s.nextInt());	
+		while (s.hasNextLine()) {
+				if(i == vertq) {
+					break;
+				}
+				//System.out.println(index[j] + x[j] + y[j]);
+				index[i] = Integer.parseInt(s.next());
+				
+				x[i] = Double.parseDouble(s.next());
+				y[i] = Double.parseDouble(s.next());
+				//System.out.println(index[i] + " " + x[i] + " " + y[i]);
+				i++;
+				
+				s.hasNextLine();
+			 
 		}
-		int total = 0;
-		for (int i = 0; i < vertq; i++) { //linhas
-			for (int j = 0; j < vertq; j++) { //colunas
-				matriz[i][j] = numeros.get(total);
-				total++;
-			}
-		}
+		
+		int[][] matriz = new int[vertq][vertq]; 
+		
+		coordRead(vertq, matriz, x, y);  //começando daqui já tenho uma matriz
+
 		s.close();
 		new InitialSolution();
 		Integer[] sol = InitialSolution.iSolution(matriz, vertq); //salva array de solução a
@@ -50,7 +85,8 @@ public class VND {
 		new InitialSolution();
 		int values = InitialSolution.getValue(sol, matriz, vertq); // salva valor da solução
 		//System.out.println("resultado aleatório: " + values);
-		Vnd(sol, 10000,  values, matriz);
+		Vnd(sol, 1,  values, matriz);
+		System.out.println("best Sol3 main: " + Arrays.toString(sol));
 		//int solut = Vnd(sol, 1, values, matriz);
 		//System.out.println("Menor valor do vnd: " + solut);
 		
@@ -63,48 +99,73 @@ public class VND {
 	//matriz = matriz de adjascencia
 	
 	public static void Vnd(Integer[] solution, int k, int values, int[][]matriz){
-		int loop = 0;
+		long startTime = System.currentTimeMillis();
+		
 		Integer[] bestSol = solution;
-		Integer[] swapSol = null;
-		int reinVal;
-		int bestValue = values;
-		// roda cada busca por vizinhança k vezes
-		while(loop < k){ //swap
-			swapSol = swap(bestSol, matriz, bestSol.length, bestValue);  //vetor apóswap
-			int sSol = InitialSolution.getValue(swapSol, matriz, swapSol.length);  //salva o custo
-			if(sSol < bestValue){
-				bestValue = sSol;
-				bestSol = swapSol;
-				loop = 0;
-				//System.out.println("valor do swap: " + sSol);
+		Integer[] reinSol;
+		Integer[] swapSol;
+		Integer[] tSol;
+		int twSol;
+		int bestValue = values; //melhor custo encontrado
+		int sSol; //custo encontrado pelo swap
+		int rSol; //custo encontrado pelo reinsertion
+		int r = 0; //quantidade de vezes que pode errar
+		
+		
+			while (r <= 10) { 
+				//System.out.println("entrou swap");
+				
 
-			}else  if(sSol > bestValue){ //ainda repete 10x caso não ache melhor solução
-				loop++;
+				while (true) {
+					
+					swapSol = swap(bestSol, matriz, bestSol.length, values);
+					sSol = InitialSolution.getValue(swapSol, matriz, swapSol.length);
+					//System.out.println("sSol: " + sSol);
+					if (sSol < bestValue) { //se a solução do swap for melhor do que a que temos
+						bestSol = swapSol;
+						bestValue = sSol;
+						//System.out.println("Valor do swap dentro do if: " + sSol);
+						continue; //roda novamente o swap
+					} else { //se não for melhor entra no rein
+						break;
+					} 
+				}
+				
+				reinSol = reinsertion(bestSol, matriz, bestValue, bestSol.length);
+				rSol = InitialSolution.getValue(reinSol, matriz, reinSol.length);
+				//System.out.println("Solução rein: " + rSol);
+				if(rSol < bestValue) {
+					bestValue = rSol;
+					bestSol = reinSol;
+					continue;
+				}
+				tSol = tOpt(bestSol, matriz, bestSol.length, bestValue);
+				twSol = InitialSolution.getValue(tSol, matriz, tSol.length);
+				if(twSol < bestValue) {
+					bestValue = twSol;
+					bestSol = tSol;
+					continue;
+				}
+				
+				//System.out.println("best SOl: "  +  Arrays.deepToString(bestSol));
+				
+				
+				r++;
 			}
-		}
-		//System.out.println("best value on swap: " + bestValue);
-		loop = 0;
-		while(loop < k){ //rein
-			//System.out.println("entrou no reinsertion");
-			reinVal = reinsertion(bestSol, matriz, bestValue, bestSol.length); //caminho gerado pelo reinsertion
-			//int reinSol = InitialSolution.getValue(reinVal, matriz, reinVal.length);
-			if(reinVal < bestValue){
-				System.out.println("encontrou menor pelo reinsertion");
-				bestValue = reinVal;
-				//bestSol = reinVal;
-				loop = 0;
-				//System.out.println("best sol: " + bestSol);
-			} else if(reinVal > bestValue){
-				loop++;
-			}
-		}
-		System.out.println("best value after rein and at all: " + bestValue);
-		
-		
+			
+		solution = bestSol;
+		System.out.println("best valu at all: " + bestValue);
+		System.out.println("bestSol length: " + bestSol.length);
+		int valorFinal = InitialSolution.getValue(bestSol, matriz, bestSol.length);
+		System.out.println("valorFinal: " + valorFinal);
+		long endTime = System.currentTimeMillis() - startTime;
+		System.out.printf("vnd Levou %.8f segundos %n", endTime/1e3);	
+			
 	}
 
+
 	
-	public static int reinsertion(Integer[] solution, int[][]matriz, int values, int size){
+	public static Integer[] reinsertion(Integer[] solution, int[][]matriz, int values, int size){
 		long startTime = System.currentTimeMillis();
 		size--;
 		int menorSol = values;
@@ -167,11 +228,10 @@ public class VND {
 			new InitialSolution();
 			valor = InitialSolution.getValue(solution, matriz, size);
 			long endTime = System.currentTimeMillis() - startTime;
-			//System.out.printf("R  einsertion Levou %.8f segundos %n", endTime/1e3);
-			//System.out.println("Array do reinsertion: " + Arrays.deepToString(solution));
+
 		}	
 
-		return valor;
+		return solution;
 		
 	}
 	
@@ -179,31 +239,122 @@ public class VND {
 	
 	
 	private static Integer[] swap(Integer[] solution, int[][]matriz, int size, int valuesIn) {
-		long startTime = System.currentTimeMillis();
-		Integer[] temporario =  solution;
-		int valoresDentro = valuesIn;
-		int valorTemporario = 0;
 		
-		//System.out.println("Solution: " + Arrays.deepToString(solution));
-		for (int i = 1; i < size; i++) {
-			temporario = solution;
-			for (int j = i+1; j < size; j++) {
-				int aux = temporario[i];
-				temporario[i] = temporario[j];
-				temporario[j] = aux;
-			
-				valorTemporario = InitialSolution.getValue(temporario, matriz, size);  
-				
-				if (valorTemporario < valoresDentro) {
-					valoresDentro = valorTemporario;
-					//System.out.println("array temporario: " +  Arrays.toString(temporario));
-					solution = temporario;
-					valorTemporario = InitialSolution.getValue(solution, matriz, size);
-					//System.out.println("Valor encontrado no swap: " + valorTemporario);
+		int i, j;
+		i = j = 1;
+		int start = 1;
+		int novaSol = Integer.MAX_VALUE;
+		int vertice1 = 0;
+		int vertice2 = 0;
+		int menorValue = valuesIn;
+		
+		while(i < size - 1) {
+			while(j < size -1) {
+				if(i == j) {
+					j++;
+					continue;
 				}
-			}				
+				if(j == i+1) {
+					novaSol = valuesIn
+							- matriz[solution[i-1]][solution[i]]
+							- matriz[solution[j]][solution[j+1]]
+							+ matriz[solution[i-1]][solution[j]]
+							+ matriz[solution[i]][solution[j+1]];
+				} else {
+					novaSol = valuesIn
+							- matriz[solution[i-1]][solution[i]]
+							- matriz[solution[j]][solution[j+1]]
+							+ matriz[solution[i-1]][solution[j]]
+							+ matriz[solution[i]][solution[j+1]]
+							- matriz[solution[j]][solution[i+1]]
+							- matriz[solution[j-1]][solution[j]]
+							+ matriz[solution[j]][solution[i+1]]
+							+ matriz[solution[j-1]][solution[i]];
+				}
+				if(novaSol < menorValue){
+					menorValue = novaSol;
+					vertice1 = i;
+					vertice2 = j;
+				}
+				j++;
+			}
+			j = ++start;
+			i++;
 		}
-		//System.out.println("Array retornado: " + Arrays.toString(solution));
+		if(menorValue < valuesIn) {
+			int aux = solution[vertice1];
+			solution[vertice1] = solution[vertice2];
+			solution[vertice2] = aux;
+			
+		}
 		return solution;
 	}
+
+		
+	
+	private static Integer[] tOpt(Integer[] solution, int[][]matriz, int size, int values) {
+		size--;
+		int i, j, menorSol, novaSol, v1 = 0, v2 = 0, aux;
+		//Integer[] solu = solution;
+		i = j = 1;
+		menorSol = values;
+		novaSol = Integer.MAX_VALUE;
+		
+		while(i < size-2) {
+			for(j = i + 3; j < size; j++) {
+				novaSol = values
+						- matriz[solution[i-1]][solution[i]]
+						- matriz[solution[j+1]][solution[j]]
+						+ matriz[solution[j+1]][solution[i]]
+						+ matriz[solution[i-1]][solution[j]];
+				if(novaSol < menorSol) {
+					menorSol = novaSol;
+					v1 = i;
+					v2 = j;
+				}
+			}
+			++i;
+		}
+		j = v2;
+		if(menorSol < values) {
+			for(i = v1; i < j;i++) {
+				aux = solution[i];
+				solution[i] = solution[j];
+				solution[j] = aux;
+				j--;
+			}
+			values = InitialSolution.getValue(solution, matriz, size);
+		}
+		
+		return solution;
+		
+	}
+	
+	
+	
+	public static int distance(double x1, double x2, double y1, double y2) {
+		double dist = ((x2-x1) * (x2-x1) ) + ( (y2-y1) * (y2-y1) );
+		return (int) Math.round(Math.sqrt(dist));
+	}
+	
+	public static void coordRead(int vertq, int[][] matriz, double[] x, double[] y) {
+		vertq--;
+		int i, j;
+		int start = 0;
+		System.out.println(vertq);
+		for(i =0; i < vertq; i++) {
+			for(j=start; j < vertq; j++) {
+				if(i == j) {
+					matriz[i][j] = matriz[j][i] = 0;
+					continue;
+				}
+				matriz[i][j] = matriz[j][i] = distance(x[i], x[j], y[i], y[j]);
+			}
+			start++;
+		}
+		
+	}
+	
+	
+	
 }

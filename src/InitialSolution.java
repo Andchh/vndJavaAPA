@@ -9,8 +9,9 @@ public final class InitialSolution {
 	
 	public static int getValue(Integer[] sol, int[][]matriz, int size){
 		size--;  //subtrair 2x pois -1 da matriz começando em 0
-		size--;  // e -1 pois são n-1 operações para somar os valores
+		//size--;  // e -1 pois são n-1 operações para somar os valores
 		int value = 0; //valor total do caminho
+		//System.out.println("size: " + size);
 		//System.out.println(Arrays.toString(sol));
 		for(int i = 0; i < size; i++){
 
@@ -32,8 +33,9 @@ public final class InitialSolution {
 	
 	
 	public static Integer[] iSolution(int[][] matriz, int size){
-		size--;
-		
+		//size--;
+		long startTime = System.currentTimeMillis();
+
 		int custoF = 0;
 		LinkedList<Integer> solucao = new LinkedList<Integer>();
 		boolean[] verified = new boolean[size];
@@ -52,14 +54,14 @@ public final class InitialSolution {
 					custo = matriz[i][j];
 				}
 			}
-			System.out.println("i + 1; " + (i+1));
+			//System.out.println("i + 1; " + (i+1));
 			caminho[i+1] = index;
 			verified[index] = true;
 			solucao.addLast(index);
 		}
 		
 		caminho[size] = 0;
-		solucao.addLast(0);
+		//solucao.addLast(0);
 		
 		for (int i = 0; i < size; i++) {
 			custoF  += matriz[caminho[i]][caminho[i+1]];
@@ -70,8 +72,10 @@ public final class InitialSolution {
 		Integer[] nSolu = Arrays.stream(nSol).boxed().toArray(Integer[]::new);
 		
 		
-		System.out.println("nSolu: " + Arrays.toString(nSolu));
+		
 		System.out.println("Valor da Construtiva: " + InitialSolution.getValue(nSolu, matriz, size));
+		long endTime = System.currentTimeMillis() - startTime;
+		System.out.printf("vnd Levou %.8f segundos %n", endTime/1e3);
 		return nSolu;
 		
 //		size--;
